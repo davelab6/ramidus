@@ -23,10 +23,12 @@ ClutterActor* webcam_tex = NULL;
 GstElement *desktop_pipeline = NULL;
 GstElement *webcam_pipeline = NULL;
 
-#define capture_width 1280
-#define capture_height 800
-#define webcam_width 200
-#define webcam_height 150
+int capture_width;
+int capture_height;
+
+//TODO: hardcoded webcam overlay dimensions
+#define webcam_width (capture_width/6)
+#define webcam_height (capture_height/6)
 
 ClutterActor* new_screen_actor() {
 
@@ -60,15 +62,16 @@ ClutterActor* new_webcam_actor() {
 
   webcam_tex = clutter_texture_new();
   clutter_container_add_actor (CLUTTER_CONTAINER (stage), webcam_tex);
-  clutter_actor_set_position(webcam_tex, capture_width - 1.3*webcam_width, capture_height - 1.3*webcam_height);
+//TODO: hardcoded webcam overlay positioning on the stage
+  clutter_actor_set_position(webcam_tex, (capture_width - 1.3*webcam_width), (capture_height - 1.3*webcam_height));
   clutter_actor_set_size(webcam_tex, webcam_width, webcam_height);
 
   GstElement* videosink = clutter_gst_video_sink_new ((ClutterTexture *) webcam_tex);
-  //g_object_set(G_OBJECT(videosink), "use-shaders", FALSE, NULL);
+  //g_object_set(G_OBJECT(videosink), "use-shaders", FALSE, NULL);//TODO: fix cogl feature detection
   GstElement* v4l2src = gst_element_factory_make ("v4l2src", NULL);
   GstElement* ffmpegcolor = gst_element_factory_make ("ffmpegcolorspace", NULL);
 
-  g_object_set(G_OBJECT(v4l2src), "device", "/dev/video0", NULL);
+  g_object_set(G_OBJECT(v4l2src), "device", "/dev/video0", NULL); //TODO: hardcoded webcam video device
 
   webcam_pipeline = gst_pipeline_new ("webcam");
 
@@ -96,6 +99,12 @@ int main(int argc, char *argv[]) {
   ClutterColor stage_color = { 0, 0, 50, 255 };
 
   stage = clutter_stage_get_default();
+
+  Display* dpy = XOpenDisplay(NULL);
+  int screen_number = 0;//TODO: hardcoded
+  capture_width = XDisplayWidth(dpy, screen_number);
+  capture_height = XDisplayHeight(dpy, screen_number);
+
   clutter_actor_set_size (stage, capture_width, capture_height);
   clutter_stage_set_color (CLUTTER_STAGE(stage), &stage_color);
 
