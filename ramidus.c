@@ -58,6 +58,14 @@ ClutterActor* new_screen_actor() {
 }
 
 
+void on_cursor_enter_webcam_area(ClutterStage *stage, ClutterEvent *event, gpointer data) {
+  clutter_actor_set_opacity(webcam_tex, 50);//TODO: hardcoded webcam opacity  
+}
+
+void on_cursor_leave_webcam_area(ClutterStage *stage, ClutterEvent *event, gpointer data) {
+  clutter_actor_set_opacity(webcam_tex, 200);//TODO: hardcoded webcam opacity  
+}
+
 ClutterActor* new_webcam_actor() {
 
   webcam_tex = clutter_texture_new();
@@ -66,6 +74,9 @@ ClutterActor* new_webcam_actor() {
   clutter_actor_set_position(webcam_tex, (capture_width - 1.3*webcam_width), (capture_height - 1.3*webcam_height));
   clutter_actor_set_size(webcam_tex, webcam_width, webcam_height);
   clutter_actor_set_opacity(webcam_tex, 200);//TODO: hardcoded webcam opacity
+
+  g_signal_connect(webcam_tex, "enter-event", G_CALLBACK(on_cursor_enter_webcam_area), NULL);
+  g_signal_connect(webcam_tex, "leave-event", G_CALLBACK(on_cursor_leave_webcam_area), NULL);
 
   GstElement* videosink = clutter_gst_video_sink_new ((ClutterTexture *) webcam_tex);
   //g_object_set(G_OBJECT(videosink), "use-shaders", FALSE, NULL);//TODO: fix cogl feature detection
