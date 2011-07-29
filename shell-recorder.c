@@ -585,7 +585,6 @@ recorder_record_frame (ShellRecorder *recorder)
                     CLUTTER_CAIRO_FORMAT_ARGB32,
                     data);
 
-  recorder_draw_cursor (recorder, buffer);
 //TODO: hardcoded webcam opacity values
 #define MIN_WEBCAM_OPACITY 0
 #define MAX_WEBCAM_OPACITY 255
@@ -610,6 +609,7 @@ recorder_record_frame (ShellRecorder *recorder)
     }
   };
 
+  //recorder_draw_cursor (recorder, buffer);
 
   shell_recorder_src_add_buffer (SHELL_RECORDER_SRC (recorder->current_pipeline->src), buffer);
   gst_buffer_unref (buffer);
