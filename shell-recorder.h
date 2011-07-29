@@ -36,6 +36,8 @@ void               shell_recorder_set_filename (ShellRecorder *recorder,
 						const char    *filename);
 void               shell_recorder_set_pipeline (ShellRecorder *recorder,
 						const char    *pipeline);
+void               shell_recorder_set_webcam (ShellRecorder *recorder, 
+            ClutterActor  *webcam);
 gboolean           shell_recorder_record       (ShellRecorder *recorder);
 void               shell_recorder_close        (ShellRecorder *recorder);
 void               shell_recorder_pause        (ShellRecorder *recorder);

@@ -20,6 +20,12 @@ typedef enum {
   RECORDER_STATE_RECORDING
 } RecorderState;
 
+typedef enum {
+  WEBCAM_HIDE_IMMEDIATLY,
+  WEBCAM_SWITCH_CORNER,
+  WEBCAM_FADE
+} WebcamAnimationType;
+
 typedef struct _RecorderPipeline RecorderPipeline;
 
 struct _ShellRecorderClass
@@ -48,6 +54,9 @@ struct _ShellRecorder {
   #define MAX_BUTTON_EVENT_IMAGES 10
   ClutterActor* button_event_image[MAX_BUTTON_EVENT_IMAGES];
   int current_button_event_image;
+
+  ClutterActor *webcam;
+  WebcamAnimationType webcam_animation_type;
 
   gboolean have_pointer;
   int pointer_x;
@@ -281,6 +290,8 @@ shell_recorder_init (ShellRecorder *recorder)
 
   recorder->state = RECORDER_STATE_CLOSED;
   recorder->framerate = DEFAULT_FRAMES_PER_SECOND;
+
+  recorder->webcam_animation_type = WEBCAM_FADE;
 
   int i;
   for (i=0;i<MAX_BUTTON_EVENT_IMAGES; i++){
@@ -575,6 +586,30 @@ recorder_record_frame (ShellRecorder *recorder)
                     data);
 
   recorder_draw_cursor (recorder, buffer);
+//TODO: hardcoded webcam opacity values
+#define MIN_WEBCAM_OPACITY 0
+#define MAX_WEBCAM_OPACITY 255
+
+  if (recorder->webcam){
+    int mouseover = (recorder->webcam == clutter_stage_get_actor_at_pos(recorder->stage,
+                  CLUTTER_PICK_ALL, recorder->pointer_x, recorder->pointer_y));
+    switch (recorder->webcam_animation_type){
+      case WEBCAM_HIDE_IMMEDIATLY:
+        clutter_actor_set_opacity(recorder->webcam, mouseover ? MIN_WEBCAM_OPACITY : MAX_WEBCAM_OPACITY);
+        break;
+      case WEBCAM_SWITCH_CORNER:
+        //TODO: implement me!
+        break;
+      case WEBCAM_FADE:
+        clutter_actor_animate (recorder->webcam,
+                        CLUTTER_LINEAR,
+                        300,
+                        "opacity", mouseover ? MIN_WEBCAM_OPACITY : MAX_WEBCAM_OPACITY,
+                        NULL);
+        break;
+    }
+  };
+
 
   shell_recorder_src_add_buffer (SHELL_RECORDER_SRC (recorder->current_pipeline->src), buffer);
   gst_buffer_unref (buffer);
@@ -848,6 +883,18 @@ recorder_remove_update_pointer_timeout (ShellRecorder *recorder)
       g_source_remove (recorder->update_pointer_timeout);
       recorder->update_pointer_timeout = 0;
     }
+}
+
+void
+shell_recorder_set_webcam (ShellRecorder *recorder,
+                    ClutterActor  *webcam)
+{
+  if (recorder->webcam == webcam)
+    return;
+
+  recorder->webcam = webcam;
+
+  //TODO: Anything else here?
 }
 
 static void

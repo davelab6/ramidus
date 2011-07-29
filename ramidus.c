@@ -126,6 +126,7 @@ int main(int argc, char *argv[]) {
   clutter_actor_show_all (stage);
 
   recorder = shell_recorder_new (CLUTTER_STAGE (stage));
+  shell_recorder_set_webcam (recorder, thewebcam);
   shell_recorder_set_filename (recorder, "ramidus.webm");
   //start recording
   shell_recorder_record (recorder);
