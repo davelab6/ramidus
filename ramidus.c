@@ -23,10 +23,10 @@ ClutterActor* webcam_tex = NULL;
 GstElement *desktop_pipeline = NULL;
 GstElement *webcam_pipeline = NULL;
 
-#define capture_width 800
-#define capture_height 600
-#define webcam_width 160
-#define webcam_height 120
+#define capture_width 1280
+#define capture_height 800
+#define webcam_width 200
+#define webcam_height 150
 
 ClutterActor* new_screen_actor() {
 
@@ -96,7 +96,7 @@ int main(int argc, char *argv[]) {
   ClutterColor stage_color = { 0, 0, 50, 255 };
 
   stage = clutter_stage_get_default();
-  clutter_actor_set_size (stage, 800, 600);
+  clutter_actor_set_size (stage, capture_width, capture_height);
   clutter_stage_set_color (CLUTTER_STAGE(stage), &stage_color);
 
   thescreen = new_screen_actor(); 
