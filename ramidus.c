@@ -65,6 +65,7 @@ ClutterActor* new_webcam_actor() {
 //TODO: hardcoded webcam overlay positioning on the stage
   clutter_actor_set_position(webcam_tex, (capture_width - 1.3*webcam_width), (capture_height - 1.3*webcam_height));
   clutter_actor_set_size(webcam_tex, webcam_width, webcam_height);
+  clutter_actor_set_opacity(webcam_tex, 200);//TODO: hardcoded webcam opacity
 
   GstElement* videosink = clutter_gst_video_sink_new ((ClutterTexture *) webcam_tex);
   //g_object_set(G_OBJECT(videosink), "use-shaders", FALSE, NULL);//TODO: fix cogl feature detection
