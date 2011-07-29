@@ -44,7 +44,10 @@ struct _ShellRecorder {
   ClutterStage *stage;
   int stage_width;
   int stage_height;
-  ClutterActor* circle_pressed;
+
+  #define MAX_BUTTON_EVENT_IMAGES 10
+  ClutterActor* button_event_image[MAX_BUTTON_EVENT_IMAGES];
+  int current_button_event_image;
 
   gboolean have_pointer;
   int pointer_x;
@@ -254,7 +257,7 @@ recorder_repaint_hook (gpointer data)
 }
 
 #define MAXRADIUS 32
-ClutterActor* create_circle(ShellRecorder *recorder){
+ClutterActor* create_button_event_image(ShellRecorder *recorder){
   ClutterActor *circle = clutter_texture_new_from_file("button_event.png", NULL);
   clutter_actor_set_size(circle, 2*MAXRADIUS, 2*MAXRADIUS);
   clutter_actor_set_position(circle, 0, 0);
@@ -278,7 +281,12 @@ shell_recorder_init (ShellRecorder *recorder)
 
   recorder->state = RECORDER_STATE_CLOSED;
   recorder->framerate = DEFAULT_FRAMES_PER_SECOND;
-  recorder->circle_pressed = NULL;
+
+  int i;
+  for (i=0;i<MAX_BUTTON_EVENT_IMAGES; i++){
+    recorder->button_event_image[i] = NULL;
+  }
+  recorder->current_button_event_image = 0;
 }
 
 static void
@@ -475,10 +483,13 @@ recorder_draw_cursor (ShellRecorder *recorder,
 
 static void
 recorder_animate_button_press(ShellRecorder *recorder){
-  clutter_actor_set_position(recorder->circle_pressed, recorder->pointer_x, recorder->pointer_y);
-  clutter_actor_set_scale(recorder->circle_pressed, 0, 0);
-  clutter_actor_set_opacity(recorder->circle_pressed, 255);
-  clutter_actor_animate (recorder->circle_pressed,
+  int i = (recorder->current_button_event_image++)%MAX_BUTTON_EVENT_IMAGES;
+  recorder->button_event_image[i] = create_button_event_image(recorder);
+
+  clutter_actor_set_position(recorder->button_event_image[i], recorder->pointer_x, recorder->pointer_y);
+  clutter_actor_set_scale(recorder->button_event_image[i], 0, 0);
+  clutter_actor_set_opacity(recorder->button_event_image[i], 255);
+  clutter_actor_animate (recorder->button_event_image[i],
                   CLUTTER_LINEAR,
                   1000,
                   "scale-x", 1.0,
@@ -876,7 +887,6 @@ recorder_set_stage (ShellRecorder *recorder,
     }
 
   recorder->stage = stage;
-  recorder->circle_pressed = create_circle(recorder);
 
   if (recorder->stage)
     {
