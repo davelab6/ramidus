@@ -44,6 +44,7 @@ struct _ShellRecorder {
   ClutterStage *stage;
   int stage_width;
   int stage_height;
+  ClutterActor* circle_pressed;
 
   gboolean have_pointer;
   int pointer_x;
@@ -252,6 +253,18 @@ recorder_repaint_hook (gpointer data)
   return TRUE;
 }
 
+#define MAXRADIUS 32
+ClutterActor* create_circle(ShellRecorder *recorder){
+  ClutterActor *circle = clutter_texture_new_from_file("button_event.png", NULL);
+  clutter_actor_set_size(circle, 2*MAXRADIUS, 2*MAXRADIUS);
+  clutter_actor_set_position(circle, 0, 0);
+  clutter_actor_set_opacity(circle, 0);
+  clutter_actor_set_anchor_point(circle, MAXRADIUS, MAXRADIUS);
+  clutter_container_add_actor (CLUTTER_CONTAINER (recorder->stage), circle);
+  clutter_actor_show (circle);
+  return circle;
+}
+
 static void
 shell_recorder_init (ShellRecorder *recorder)
 {
@@ -265,6 +278,7 @@ shell_recorder_init (ShellRecorder *recorder)
 
   recorder->state = RECORDER_STATE_CLOSED;
   recorder->framerate = DEFAULT_FRAMES_PER_SECOND;
+  recorder->circle_pressed = NULL;
 }
 
 static void
@@ -459,6 +473,25 @@ recorder_draw_cursor (ShellRecorder *recorder,
   cairo_surface_destroy (surface);
 }
 
+static void
+recorder_animate_button_press(ShellRecorder *recorder){
+  clutter_actor_set_position(recorder->circle_pressed, recorder->pointer_x, recorder->pointer_y);
+  clutter_actor_set_scale(recorder->circle_pressed, 0, 0);
+  clutter_actor_set_opacity(recorder->circle_pressed, 255);
+  clutter_actor_animate (recorder->circle_pressed,
+                  CLUTTER_LINEAR,
+                  1000,
+                  "scale-x", 1.0,
+                  "scale-y", 1.0,
+                  "opacity", 0,
+                  NULL);
+}
+
+static void
+recorder_animate_button_release(ShellRecorder *recorder){
+  recorder_animate_button_press(recorder);
+};
+
 /* Draw an overlay indicating how much of the target memory is used
  * for buffering frames.
  */
@@ -647,6 +680,22 @@ recorder_event_filter (XEvent        *xev,
 
       recorder_queue_redraw (recorder);
     }
+  else if (xev->xany.type == ButtonPress)
+    {
+      recorder->pointer_x = xev->xmotion.x;
+      recorder->pointer_y = xev->xmotion.y;
+
+      recorder_animate_button_press(recorder);
+      recorder_queue_redraw (recorder);
+    }
+  else if (xev->xany.type == ButtonRelease)
+    {
+      recorder->pointer_x = xev->xmotion.x;
+      recorder->pointer_y = xev->xmotion.y;
+
+      recorder_animate_button_release(recorder);
+      recorder_queue_redraw (recorder);
+    }
   /* We want to track whether the pointer is over the stage
    * window itself, and not in a child window. A "virtual"
    * crossing is one that goes directly from ancestor to child.
@@ -827,6 +876,7 @@ recorder_set_stage (ShellRecorder *recorder,
     }
 
   recorder->stage = stage;
+  recorder->circle_pressed = create_circle(recorder);
 
   if (recorder->stage)
     {
