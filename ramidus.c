@@ -43,7 +43,7 @@ ClutterActor* new_screen_actor() {
   GstElement* imagesrc = gst_element_factory_make ("ximagesrc", NULL);
   GstElement* ffmpegcolor = gst_element_factory_make ("ffmpegcolorspace", NULL);
 
-  g_object_set(G_OBJECT(imagesrc), "display-name", ":0.0", NULL);
+  g_object_set(G_OBJECT(imagesrc), "display-name", ":0.0", NULL);//TODO: hardcoded display-name
   g_object_set(G_OBJECT(imagesrc), "startx", 0, NULL);
   g_object_set(G_OBJECT(imagesrc), "starty", 0, NULL);
   g_object_set(G_OBJECT(imagesrc), "endx", capture_width, NULL);
