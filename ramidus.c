@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include "memory.h"
 #include <clutter/clutter.h>
 #include <clutter-gst/clutter-gst.h>
 #include <gst/gst.h>
