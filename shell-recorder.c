@@ -51,6 +51,7 @@ struct _ShellRecorder {
   int stage_width;
   int stage_height;
 
+  ClutterActor* key_event_image;
   #define MAX_BUTTON_EVENT_IMAGES 10
   ClutterActor* button_event_image[MAX_BUTTON_EVENT_IMAGES];
   int current_button_event_image;
@@ -277,6 +278,17 @@ ClutterActor* create_button_event_image(ShellRecorder *recorder){
   return circle;
 }
 
+ClutterActor* create_key_event_image(ShellRecorder *recorder, unsigned int key){
+  ClutterActor *k = clutter_texture_new_from_file("key_event.png", NULL);
+  clutter_actor_set_size(k, 50, 50);
+  clutter_actor_set_position(k, 10, 10);
+  clutter_actor_set_opacity(k, 255);
+  clutter_actor_set_anchor_point(k, 0, 0);
+  clutter_container_add_actor (CLUTTER_CONTAINER (recorder->stage), k);
+  clutter_actor_show (k);
+  return k;
+}
+
 static void
 shell_recorder_init (ShellRecorder *recorder)
 {
@@ -298,6 +310,7 @@ shell_recorder_init (ShellRecorder *recorder)
     recorder->button_event_image[i] = NULL;
   }
   recorder->current_button_event_image = 0;
+  recorder->key_event_image = NULL;
 }
 
 static void
@@ -513,6 +526,23 @@ static void
 recorder_animate_button_release(ShellRecorder *recorder){
   recorder_animate_button_press(recorder);
 };
+
+static void
+recorder_animate_key_press(ShellRecorder *recorder, unsigned int keycode){
+//  if (recorder->key_event_image)
+//    free(recorder->key_event_image);
+  printf("keycode: %d\n", keycode);
+  recorder->key_event_image = create_key_event_image(recorder, keycode);
+}
+
+static void
+recorder_animate_key_release(ShellRecorder *recorder){
+  clutter_actor_animate (recorder->key_event_image,
+                  CLUTTER_LINEAR,
+                  400,
+                  "opacity", 0,
+                  NULL);
+}
 
 /* Draw an overlay indicating how much of the target memory is used
  * for buffering frames.
@@ -740,6 +770,17 @@ recorder_event_filter (XEvent        *xev,
       recorder->pointer_y = xev->xmotion.y;
 
       recorder_animate_button_release(recorder);
+      recorder_queue_redraw (recorder);
+    }
+  else if (xev->xany.type == KeyPress)
+    {
+      recorder_animate_key_press(recorder, xev->xkey.keycode); //TODO: pass keycode as parameter for rendering
+      recorder_queue_redraw (recorder);
+
+    }
+  else if (xev->xany.type == KeyRelease)
+    {
+      recorder_animate_key_release(recorder);
       recorder_queue_redraw (recorder);
     }
   /* We want to track whether the pointer is over the stage
